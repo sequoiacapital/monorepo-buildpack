@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+echo "SC Monorepo"
+exit 0

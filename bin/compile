@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+
+## Setup 
+
+BUILD_DIR="$1"
+CACHE_DIR="$2"
+ENV_DIR="$3"
+
+if [ ! -f "${ENV_DIR}/APP_BASE" ]; then
+    echo "APP_BASE was not set. Aborting"
+    exit 1
+fi
+APP_BASE="$(cat "${ENV_DIR}/APP_BASE")"
+APP_DIR="$BUILD_DIR/$APP_BASE"
+
+
+## Helpers 
+
+shopt -s dotglob
+
+indent() {
+    sed -u 's/^/      /'
+}
+
+JQ="/usr/bin/jq"
+if ! test -f "$JQ"; then
+  curl -Ls https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 > "/usr/bin/jq" \
+      && chmod +x "/usr/bin/jq"
+fi
+
+
+## Copy & Merge 
+
+copy() {
+  if [[ -f "$1.heroku" ]]; then 
+    # Copy heroku-specific files 
+    echo "Copying $1.heroku to $BUILD_DIR/$(basename $1 .heroku)" | indent
+    cp "$1.heroku" "$BUILD_DIR/$(basename $1 .heroku)"
+  elif [[ -f "$1" ]]; then 
+    # Copy general purpose 
+    echo "Copying $1 to $BUILD_DIR" | indent
+    cp "$1" "$BUILD_DIR/"
+  fi
+}
+
+copy "$APP_DIR/requirements.txt"
+copy "$APP_DIR/package.json"
+copy "$APP_DIR/package-lock.json"
+copy "$APP_DIR/yarn.lock"
+copy "$APP_DIR/Gemfile"
+copy "$APP_DIR/Gemfile.lock"
+copy "$APP_DIR/app.json"
+copy "$APP_DIR/Procfile"
+
+
+if [[ -f "$APP_DIR/heroku-build.sh" ]]; then
+  echo "Executing $APP_DIR/heroku-build.sh" | indent 
+  source "$APP_DIR/heroku-build.sh"
+fi

@@ -52,6 +52,7 @@ copy "$APP_DIR/Gemfile"
 copy "$APP_DIR/Gemfile.lock"
 copy "$APP_DIR/app.json"
 copy "$APP_DIR/Procfile"
+copy "$APP_DIR/Rakefile"
 
 
 if [[ -f "$APP_DIR/heroku-build.sh" ]]; then

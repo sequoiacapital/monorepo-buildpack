@@ -23,16 +23,20 @@ indent() {
     sed -u 's/^/      /'
 }
 
-JQ="/usr/bin/jq"
+mkdir -p "$BUILD_DIR/bin"
+JQ="$BUILD_DIR/bin/jq"
 if ! test -f "$JQ"; then
-  curl -Ls https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 > "/usr/bin/jq" \
-      && chmod +x "/usr/bin/jq"
+  curl -LsSf https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 > "$JQ" \
+      && chmod +x "$JQ"
 fi
-DOPPLER="/usr/bin/doppler"
+DOPPLER="$BUILD_DIR/bin/doppler"
 if ! test -f "$DOPPLER"; then
   curl -LsSf 'https://cli.doppler.com/download?os=linux&arch=amd64&format=tar' | tar -xzO doppler > "$DOPPLER" \
       && chmod +x "$DOPPLER"
 fi
+# some buildpacks already add $HOME/bin to the PATH, but the python one is a notable exception
+mkdir -p "$BUILD_DIR/.profile.d"
+echo 'export PATH=$PATH:$HOME/bin' > "$BUILD_DIR/.profile.d/add_root_bin_dir_to_path.sh"
 
 
 ## Copy & Merge 
